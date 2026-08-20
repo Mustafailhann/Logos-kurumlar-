@@ -523,17 +523,26 @@ async function handleAiChatInput(rawText){
     addAiChatMsg('🔄 Portal verilerini çekmeye çalışıyorum...');
     try{
       const statusRes=(await api('/api/portal/autosync/status')).data;
-      if(!statusRes.has_cookie&&!statusRes.has_password){
-        addAiChatMsg('🔐 Henüz oturum açılmamış. Lütfen <b>kullanıcı adınızı</b> yazın:');
+      if(!statusRes || !statusRes.has_cookie){
+        addAiChatMsg('🔐 Henüz canlı oturum açılmamış veya oturum süreniz dolmuş.<br>Lütfen <b>kullanıcı adınızı</b> (e-posta) yazarak SMS girişini başlatın:');
         _aiChatLoginState={step:'ask_username',username:'',password:'',sessionId:''};
-      } else {
-        const r=(await api('/api/portal/autosync/trigger',{method:'POST'})).data;
-        if(r.ok){addAiChatMsg('✅ Portal verileri başarıyla güncellendi! Tablonuzu yenileyebilirsiniz.');await Promise.all([loadFilters(),loadAllInstitutions(),refreshInstitutions()]);await openAiRobotAssistant();}
-        else{addAiChatMsg(`⚠️ Veri çekilemedi: <b>${esc(r.error||'Bilinmeyen hata')}</b>. Lütfen tekrar giriş yapın.<br><b>Kullanıcı adınızı</b> yazın:`);_aiChatLoginState={step:'ask_username',username:'',password:'',sessionId:''};}
+        return;
       }
-    }catch(e){addAiChatMsg(`❌ Hata: ${esc(e.message)}`);}
+      const r=(await api('/api/portal/autosync/trigger',{method:'POST'})).data;
+      if(r && r.ok){
+        addAiChatMsg('✅ Portal verileri başarıyla güncellendi! Tablonuz canlı okullarla yenilendi.');
+        await Promise.all([loadFilters(),loadAllInstitutions(),refreshInstitutions()]);
+      }else{
+        addAiChatMsg(`⚠️ Veri çekilemedi: <b>${esc((r&&r.error)||'Oturum süresi dolmuş')}</b>.<br>Lütfen tekrar SMS girişi yapmak için <b>kullanıcı adınızı</b> (e-posta) yazın:`);
+        _aiChatLoginState={step:'ask_username',username:'',password:'',sessionId:''};
+      }
+    }catch(e){
+      addAiChatMsg(`🔐 Henüz canlı oturum açılmamış.<br>Lütfen <b>kullanıcı adınızı</b> (e-posta) yazarak SMS girişini başlatın:`);
+      _aiChatLoginState={step:'ask_username',username:'',password:'',sessionId:''};
+    }
     return;
   }
+
 
   // --- 2. Conversational login flow ---
   if(_aiChatLoginState.step==='ask_username'||/kullanıcı.?adı|username|e.?posta|email|giriş.?yap|login/i.test(lower)){

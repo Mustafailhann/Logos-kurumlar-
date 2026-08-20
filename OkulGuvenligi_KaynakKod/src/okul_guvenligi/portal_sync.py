@@ -390,6 +390,25 @@ def fetch_portal_with_cookie(cookie_string: str, url: str = "https://okulguvenli
 
 
 
+def extract_cookies_from_response_and_jar(resp: Any, cj: Any) -> str:
+    cookie_dict: dict[str, str] = {}
+    if cj:
+        for c in cj:
+            if c.name and c.value and c.value.lower() != "deleted":
+                cookie_dict[c.name] = c.value
+    if resp and hasattr(resp, "headers"):
+        set_cookies = resp.headers.get_all("Set-Cookie") or []
+        for header in set_cookies:
+            parts = header.split(";")
+            if parts and "=" in parts[0]:
+                kv = parts[0].strip().split("=", 1)
+                k, v = kv[0].strip(), kv[1].strip()
+                if v and v.lower() != "deleted":
+                    cookie_dict[k] = v
+    cookie_dict.setdefault("site_kullanim_modu", "kapi")
+    return "; ".join(f"{k}={v}" for k, v in cookie_dict.items())
+
+
 class PortalLoginSessionStore:
     """Manages 2-Step Interactive Portal Login with SMS OTP & Automatic PHPSESSID Extraction"""
     def __init__(self):
@@ -438,30 +457,12 @@ class PortalLoginSessionStore:
         except Exception as exc:
             raise ValueError(f"okulguvenligi.com giriş hatası: {exc}")
 
-def extract_cookies_from_response_and_jar(resp: Any, cj: Any) -> str:
-    cookie_dict: dict[str, str] = {}
-    if cj:
-        for c in cj:
-            if c.name and c.value and c.value.lower() != "deleted":
-                cookie_dict[c.name] = c.value
-    if resp and hasattr(resp, "headers"):
-        set_cookies = resp.headers.get_all("Set-Cookie") or []
-        for header in set_cookies:
-            parts = header.split(";")
-            if parts and "=" in parts[0]:
-                kv = parts[0].strip().split("=", 1)
-                k, v = kv[0].strip(), kv[1].strip()
-                if v and v.lower() != "deleted":
-                    cookie_dict[k] = v
-    cookie_dict.setdefault("site_kullanim_modu", "kapi")
-    return "; ".join(f"{k}={v}" for k, v in cookie_dict.items())
-
-
     def verify_sms(self, session_id: str, sms_code: str) -> dict[str, Any]:
         with self._lock:
             session = self._sessions.get(session_id)
             if not session:
                 raise ValueError("Oturum süresi doldu. Lütfen tekrar giriş yapın.")
+
 
         opener = session["opener"]
         cj = session["cj"]
@@ -664,19 +665,23 @@ class PortalAutoSyncManager:
     def trigger_sync(self) -> dict[str, Any]:
         self.last_status = "running"
         try:
-            records = []
-            if self.cookie_string:
-                try:
-                    records = fetch_portal_with_cookie(self.cookie_string)
-                except Exception:
-                    pass
+            if not self.cookie_string or not self.cookie_string.strip():
+                self.last_status = "error"
+                self.last_error = "Henüz canlı oturum açılmamış. Lütfen SMS girişi yapın."
+                return {"ok": False, "error": self.last_error}
 
-            if not records and self.username and self.password:
-                records = fetch_portal_live(self.username, self.password, self.cookie_string)
+            records = []
+            try:
+                records = fetch_portal_with_cookie(self.cookie_string)
+            except Exception as exc:
+                self.last_status = "error"
+                self.last_error = str(exc)
+                return {"ok": False, "error": str(exc)}
 
             if records:
                 sha256 = hashlib.sha256(f"{self.cookie_string[:10]}_{len(records)}_{time.time()}".encode("utf-8")).hexdigest()
                 result = self.db.import_records(records, f"{self.interval_minutes} Dk Otomatik Portal Senkronizasyonu", sha256)
+                self.db.recalculate_health_statuses()
                 self.sync_count += 1
                 self.last_sync_at = time.strftime("%Y-%m-%d %H:%M:%S")
                 self.last_status = "ok"
@@ -692,4 +697,5 @@ class PortalAutoSyncManager:
             self.last_status = "error"
             self.last_error = str(exc)
             return {"ok": False, "error": str(exc)}
+
 

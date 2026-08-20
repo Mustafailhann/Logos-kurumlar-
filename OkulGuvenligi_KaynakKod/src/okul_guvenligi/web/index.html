@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>LOGOS TECH · Dinamik İşletme Platformu</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><img src="/assets/logos-tech.png" alt="LOGOS TECH">
+        <div><strong>LOGOS TECH</strong><span>Dinamik işletme platformu</span></div>
+      </div>
+      <nav id="mainNavigation">
+        <button class="nav-item active" data-view="institutions"
+          data-nav-key="institutions"><span>▦</span><b>Kurumlar</b></button>
+        <button class="nav-item" data-view="finance" data-nav-key="finance"><span>₺</span><b>Finans</b></button>
+        <button class="nav-item" data-view="commissions" data-nav-key="commissions"><span>%</span><b>Prim</b></button>
+        <button class="nav-item ai-assistant-nav" id="sidebarAiAssistantBtn"
+          style="background: linear-gradient(135deg, rgba(2,132,199,0.18), rgba(16,185,129,0.18)); border: 1px solid rgba(2,132,199,0.4); color: #38bdf8; font-weight: 700; margin-top: 6px; margin-bottom: 6px; position: relative;">
+          <span style="font-size: 18px; filter: drop-shadow(0 0 6px #0284c7);">🤖</span>
+          <b style="color: #38bdf8; text-shadow: 0 0 8px rgba(2,132,199,0.4);">LOGOS TECH Asistan</b>
+          <span class="ai-pulse-dot"
+            style="position: absolute; right: 10px; top: 12px; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></span>
+        </button>
+        <div id="dynamicModuleNavigation" class="dynamic-module-navigation"></div>
+        <button class="nav-item studio-nav" data-view="platformStudio"><span>◈</span><b>Platform Stüdyosu</b></button>
+        <button class="nav-item" id="openBackups" data-nav-key="backups"><span>⟳</span><b>Yedekler</b></button>
+        <button class="nav-item" data-view="settings" data-nav-key="settings"><span>⚙</span><b>Ayarlar</b></button>
+      </nav>
+
+      <div class="sidebar-foot"><button class="settings-access" type="button" data-view="settings"
+          title="Ayarlar her zaman buradan açılır">⚙</button>
+        <div>
+          <div class="status-line"><i></i><span>Yerel veri · OpenAI isteğe bağlı</span></div><small
+            id="versionLabel">Sürüm yükleniyor…</small>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section id="institutionsView" class="app-view">
+        <header class="topbar">
+          <div>
+            <h1 data-page-title="institutions">Kurum ve panel takibi</h1>
+            <p data-page-subtitle="institutions">Çatı kurumlar tek kurum sayılır; alt kurumların ID ve panelleri ayrı
+              izlenir.</p>
+          </div>
+          <div class="top-actions"><button class="button secondary" id="exportInstitutions">Excel’e
+              İndir</button><button class="button secondary" id="importButton">Excel’den Güncelle</button><button
+              class="button secondary" id="openInstitutionTrash">Çöp Kutusu</button><button class="button secondary"
+              id="manageGroups">Grupları Düzenle</button><button class="button primary" id="addInstitutionButton">＋ Yeni
+              Kurum</button></div>
+
+        </header>
+        <section class="kpi-grid">
+          <article class="kpi"><span>Kurum</span><strong id="kpiInstitutions">—</strong><small id="kpiContext">Filtre
+              sonucu</small></article>
+          <article class="kpi"><span>Panel</span><strong id="kpiPanels">—</strong><small>Ayrı kontrol kaydı</small>
+          </article>
+          <article class="kpi danger"><span>Sorunlu kurum</span><strong id="kpiErrorInstitutions">—</strong><small>En az
+              bir kaydında hata var</small></article>
+          <article class="kpi danger"><span>Sorunlu panel</span><strong id="kpiErrors">—</strong><small>Kontrol edilmesi
+              gereken panel</small></article>
+        </section>
+        <section class="panel filter-shell">
+          <div class="search-wrap"><span>⌕</span><input id="searchInput" type="search"
+              placeholder="Kurum, kişi, ID, kod, panel veya IP ara…" autocomplete="off"></div>
+          <div class="dynamic-filters" id="institutionFilters"></div>
+          <button class="button secondary compact" id="openFilterSettings">⚙ Filtreleri Ayarla</button>
+          <button class="icon-button" id="clearFilters" title="Filtreleri temizle">×</button>
+        </section>
+        <section class="panel table-panel">
+          <div class="table-head">
+            <div><strong id="resultCount">Kurumlar</strong><span id="resultSummary">Tüm eşleşmeler tek listede</span>
+            </div>
+            <div class="table-tools"><label class="bulk-check"><input type="checkbox" id="selectVisibleInstitutions">
+                Görünenleri seç</label><button class="button danger compact" id="deleteSelectedInstitutions"
+                disabled>Seçilenleri Sil</button><button class="button secondary compact" id="expandAllGroups">Tümünü
+                Aç</button><button class="button secondary compact" id="collapseAllGroups">Tümünü Kapat</button><button
+                class="button secondary compact" id="openColumnSettings">⚙ Sütunlar</button></div>
+          </div>
+          <div class="table-scroll-top" data-scroll-sync="#institutionsScroll">
+            <div></div>
+          </div>
+          <div class="table-scroll" id="institutionsScroll">
+            <table id="institutionsTable">
+              <colgroup id="institutionsColgroup"></colgroup>
+              <thead>
+                <tr id="institutionsHead"></tr>
+              </thead>
+              <tbody id="institutionsBody"></tbody>
+            </table>
+            <div class="empty-state" id="emptyState" hidden><strong>Kayıt bulunamadı</strong><span>Filtreleri temizleyip
+                yeniden deneyin.</span></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="financeView" class="app-view" hidden>
+        <header class="topbar">
+          <div>
+            <h1 data-page-title="finance">Finans takibi</h1>
+            <p data-page-subtitle="finance">Bütün kurumlar otomatik görünür; finans alanları ve formüller sizin
+              tarafınızdan yönetilir.</p>
+          </div>
+          <div class="top-actions"><button class="button secondary" id="openFinanceFilterSettings">⌕
+              Filtreler</button><button class="button secondary" id="openFinanceColumnSettings">☷
+              Sütunlar</button><button class="button secondary" id="openFinanceCards">▣ Kartlar</button><button
+              class="button secondary" id="openFinanceViews">★ Görünümler</button><button class="button secondary"
+              id="exportFinance">Excel’e İndir</button><button class="button primary" id="manageFinanceFields">＋ Alan /
+              ƒx Formül</button></div>
+        </header>
+        <section class="kpi-grid" id="financeSummaryCards"></section>
+        <section class="active-view-banner" id="activeFinanceViewBanner" hidden></section>
+        <section class="panel filter-shell">
+          <div class="search-wrap"><span>⌕</span><input id="financeSearch" type="search"
+              placeholder="Kurum, şehir, temsilci veya finans değeri ara…"></div>
+          <div class="dynamic-filters" id="financeFilters"></div>
+          <button class="icon-button" id="clearFinanceFilters" title="Filtreleri temizle">×</button>
+        </section>
+        <section class="panel table-panel">
+          <div class="table-head">
+            <div><strong id="financeResultCount">Kurumlar</strong><span>Filtrelenen kurumların tamamı</span></div><span
+              class="subtext">Formüller bütün satırlara otomatik uygulanır.</span>
+          </div>
+          <div class="table-scroll-top" data-scroll-sync="#financeScroll">
+            <div></div>
+          </div>
+          <div class="table-scroll" id="financeScroll">
+            <table id="financeTable" class="finance-table">
+              <thead>
+                <tr id="financeHead"></tr>
+              </thead>
+              <tbody id="financeBody"></tbody>
+              <tfoot>
+                <tr id="financeTotals"></tr>
+              </tfoot>
+            </table>
+            <div class="empty-state" id="financeEmpty" hidden><strong>Kayıt bulunamadı</strong><span>Finans ekranı bütün
+                kurumları otomatik kullanır.</span></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="commissionsView" class="app-view" hidden>
+        <header class="topbar">
+          <div>
+            <h1 data-page-title="commissions">Dinamik prim hesabı</h1>
+            <p data-page-subtitle="commissions">Ölçütleri, koşulları, prim tabanını ve hesaplama şeklini siz
+              belirlersiniz.</p>
+          </div>
+          <div class="top-actions"><button class="button secondary" id="calculateCommission">Hemen
+              Hesapla</button><button class="button primary" id="addCommissionRule">＋ Prim Kuralı</button></div>
+        </header>
+        <section class="panel commission-layout">
+          <div>
+            <div class="section-title">
+              <h3>Aktif prim kuralları</h3><span id="commissionRuleCount">0</span>
+            </div>
+            <div id="commissionRules" class="rule-list"></div>
+          </div>
+          <div>
+            <div class="section-title">
+              <h3>Hesaplama sonucu</h3><strong id="commissionTotal">₺0,00</strong>
+            </div>
+            <div id="commissionResults" class="history-list">
+              <div class="empty-state compact-empty"><strong>Henüz hesaplanmadı</strong><span>Aktif kuralları uygulamak
+                  için “Hemen Hesapla” düğmesini kullanın.</span></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="settingsView" class="app-view" hidden>
+        <header class="topbar">
+          <div>
+            <h1 data-page-title="settings">Ayarlar merkezi</h1>
+            <p data-page-subtitle="settings">Kurum ve finans yapısını kod değişikliği gerektirmeden tek yerden yönetin.
+            </p>
+          </div>
+        </header>
+        <section class="settings-grid">
+          <article class="settings-card featured"><span class="settings-icon">☷</span>
+            <div>
+              <h3>Kurum formu tasarımı</h3>
+              <p>Hazır alanların adını, sırasını, zorunluluğunu, varsayılanını ve görünürlüğünü yönetin.</p>
+            </div><button class="button primary" id="settingsInstitutionForm">Formu Tasarla</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">＋</span>
+            <div>
+              <h3>Özel kurum alanları</h3>
+              <p>İhtiyacınıza göre yeni metin, sayı, tarih ve seçim alanları oluşturun.</p>
+            </div><button class="button secondary" id="settingsInstitutionFields">Alanları Yönet</button>
+          </article>
+          <article class="settings-card featured"><span class="settings-icon">≡</span>
+            <div>
+              <h3>Tanım listeleri</h3>
+              <p>İl, ilçe, durum, personel, bayi, dönem ve bütün seçim listelerini tek kaynaktan yönetin.</p>
+            </div><button class="button primary" id="settingsLookups">Tanımları Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">⌕</span>
+            <div>
+              <h3>Kurum filtreleri</h3>
+              <p>Filtreleri taşıyın, yeniden adlandırın, gösterin veya gizleyin.</p>
+            </div><button class="button secondary" id="settingsInstitutionFilters">Filtreleri Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">☷</span>
+            <div>
+              <h3>Kurum sütunları</h3>
+              <p>Sütun adını, genişliğini, sırasını ve sabitleme durumunu yönetin.</p>
+            </div><button class="button secondary" id="settingsInstitutionColumns">Sütunları Yönet</button>
+          </article>
+          <article class="settings-card featured"><span class="settings-icon">ƒx</span>
+            <div>
+              <h3>Finans alanları ve formüller</h3>
+              <p>Hesaplanan sütunlar, veri türleri, toplamlar ve güvenli formüller.</p>
+            </div><button class="button primary" id="settingsFinanceFields">Finansı Yapılandır</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">⌕</span>
+            <div>
+              <h3>Finans filtreleri</h3>
+              <p>Alanlardan filtre üretin; taşıyın, adlandırın, gösterin veya kaldırın.</p>
+            </div><button class="button secondary" id="settingsFinanceFilters">Filtreleri Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">☷</span>
+            <div>
+              <h3>Finans sütunları</h3>
+              <p>Sütun sırası, görünen ad, genişlik ve solda sabitleme.</p>
+            </div><button class="button secondary" id="settingsFinanceColumns">Sütunları Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">★</span>
+            <div>
+              <h3>Finans görünümleri</h3>
+              <p>Sık kullanılan filtre ve sütun düzenlerini isimle kaydedin.</p>
+            </div><button class="button secondary" id="settingsFinanceViews">Görünümleri Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">▣</span>
+            <div>
+              <h3>Finans özet kartları</h3>
+              <p>Kart başlığı, hesaplama, sayı biçimi, renk, sıra ve görünürlüğü yönetin.</p>
+            </div><button class="button secondary" id="settingsFinanceCards">Kartları Yönet</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">☰</span>
+            <div>
+              <h3>Sayfa ve menü</h3>
+              <p>Menü adlarını, simgeleri, sayfa başlıklarını, açıklamaları ve sıralamayı değiştirin.</p>
+            </div><button class="button secondary" id="settingsNavigation">Menüyü Tasarla</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">◐</span>
+            <div>
+              <h3>Tema stüdyosu</h3>
+              <p>Renk, yazı büyüklüğü, yoğunluk, köşe biçimi ve menü genişliğini canlı ön izleyin.</p>
+            </div><button class="button secondary" id="settingsTheme">Temayı Tasarla</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">↶</span>
+            <div>
+              <h3>Ayar geçmişi</h3>
+              <p>Kaydedilmiş ayar sürümlerini inceleyin ve tek tıkla önceki hâle dönün.</p>
+            </div><button class="button secondary" id="settingsHistory">Geçmişi Aç</button>
+          </article>
+          <article class="settings-card featured-setting"><span class="settings-icon">◈</span>
+            <div>
+              <h3>Platform Stüdyosu</h3>
+              <p>Yeni bölüm, alan, formül ve otomatik iş kuralı oluşturun.</p>
+            </div><button class="button primary" type="button" data-view="platformStudio">Stüdyoyu Aç</button>
+          </article>
+          <article class="settings-card featured"><span class="settings-icon">✦</span>
+            <div>
+              <h3>LOGOS Asistan Vision</h3>
+              <p>OpenAI bağlantısını kod yazmadan kurun; anahtar tarayıcıya geri gösterilmez.</p>
+            </div><button class="button primary" type="button" id="settingsAssistant">Asistanı Yapılandır</button>
+          </article>
+          <article class="settings-card"><span class="settings-icon">⟳</span>
+            <div>
+              <h3>Yedekler ve geçmiş</h3>
+              <p>Kritik değişiklikler öncesi yedekleri ve işlem kayıtlarını görün.</p>
+            </div><button class="button secondary" id="settingsBackups">Yedekleri Aç</button>
+          </article>
+        </section>
+        <section class="panel settings-note"><strong>Güvenli dinamik yapı</strong>
+          <p>Görünen adlar değiştirilebilir; değişmeyen teknik kimlikler sayesinde formüller, filtreler ve geçmiş
+            kayıtlar bozulmaz. Silinen alanlar önce arşive taşınır.</p>
+        </section>
+      </section>
+
+      <section id="dynamicModuleView" class="app-view" hidden>
+        <header class="topbar dynamic-module-header">
+          <div><span class="eyebrow">DİNAMİK MODÜL</span>
+            <h1 id="dynamicModuleTitle">Modül</h1>
+            <p id="dynamicModuleSubtitle">Alanlar, eylemler ve kurallar Platform Stüdyosu'ndan yönetilir.</p>
+          </div>
+          <div class="top-actions"><span id="dynamicPageActions" class="dynamic-action-area"></span><button
+              class="button secondary" id="saveDynamicView">★ Görünümü Kaydet</button><button class="button secondary"
+              type="button" data-view="platformStudio">◈ Modülü Tasarla</button></div>
+        </header>
+        <section class="kpi-grid dynamic-kpis" id="dynamicModuleKpis"></section>
+        <section class="panel filter-shell dynamic-filter-shell">
+          <div class="search-wrap"><span>⌕</span><input id="dynamicModuleSearch" type="search"
+              placeholder="Bu bölümde ara…" autocomplete="off"></div>
+          <div id="dynamicModuleFilters" class="dynamic-filters"></div><button class="icon-button"
+            id="clearDynamicFilters" title="Filtreleri temizle">×</button>
+        </section>
+        <section class="panel table-panel">
+          <div class="table-head">
+            <div><strong id="dynamicResultCount">Kayıtlar</strong><span id="dynamicResultSummary">Formüller her satırda
+                otomatik hesaplanır</span></div>
+            <div class="table-tools"><select id="dynamicSavedViews">
+                <option value="">Kayıtlı görünüm seçin</option>
+              </select></div>
+          </div>
+          <div class="table-scroll-top" data-scroll-sync="#dynamicModuleScroll">
+            <div></div>
+          </div>
+          <div class="table-scroll" id="dynamicModuleScroll">
+            <table id="dynamicModuleTable">
+              <colgroup id="dynamicModuleColgroup"></colgroup>
+              <thead>
+                <tr id="dynamicModuleHead"></tr>
+              </thead>
+              <tbody id="dynamicModuleBody"></tbody>
+              <tfoot id="dynamicModuleFoot"></tfoot>
+            </table>
+            <div class="empty-state" id="dynamicModuleEmpty" hidden><strong>Kayıt bulunamadı</strong><span>Yeni kayıt
+                ekleyebilir veya filtreleri temizleyebilirsiniz.</span></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="platformStudioView" class="app-view" hidden>
+        <header class="topbar">
+          <div><span class="eyebrow">KODSUZ YÖNETİM</span>
+            <h1>Platform Stüdyosu</h1>
+            <p>Programın bölümlerini, alanlarını, eylemlerini, hesaplamalarını ve iş kurallarını güvenli biçimde
+              yönetin.</p>
+          </div>
+          <div class="top-actions"><button class="button secondary" id="openLogosAssistant">✦ LOGOS
+              Asistan</button><button class="button secondary" id="refreshPlatformStudio">Yenile</button><button
+              class="button primary" id="newDynamicModule">＋ Yeni Bölüm</button></div>
+        </header>
+        <section class="platform-safety"><strong>Ön izle → Onayla → Yayınla</strong><span>Yapısal değişiklikler doğrudan
+            uygulanmaz. Etkilenecek kayıtlar gösterilir, otomatik yedek alınır ve geçmişe yazılır.</span></section>
+        <section class="studio-layout">
+          <aside class="panel studio-modules">
+            <div class="section-title">
+              <div>
+                <h3>Bölümler</h3><span>Kurum, Finans ve Prim korunan ana bölümlerdir.</span>
+              </div>
+            </div>
+            <div id="coreModuleCards" class="core-module-cards"></div>
+            <div id="studioModuleList" class="studio-module-list"></div><button class="button secondary full-button"
+              id="saveModuleOrder">Bölüm Sırasını Kaydet</button>
+          </aside>
+          <section class="panel studio-workspace">
+            <div id="studioEmpty" class="empty-state"><strong>Bir bölüm seçin</strong><span>Alanları, formülleri ve
+                kuralları burada düzenleyebilirsiniz.</span></div>
+            <div id="studioModuleWorkspace" hidden>
+              <div class="studio-module-title">
+                <div><span id="studioModuleIcon" class="module-icon">▦</span>
+                  <div>
+                    <h2 id="studioModuleName">—</h2>
+                    <p id="studioModuleDescription">—</p>
+                  </div>
+                </div>
+                <div><button class="button secondary compact" id="editDynamicModule">Bölümü Düzenle</button><button
+                    class="button danger compact" id="archiveDynamicModule">Arşivle</button></div>
+              </div>
+              <div class="studio-tabs"><button class="active" data-studio-tab="fields">Alanlar ve
+                  Formüller</button><button data-studio-tab="actions">Eylemler ve Butonlar</button><button
+                  data-studio-tab="rules">İş Kuralları</button><button data-studio-tab="history">Değişiklik
+                  Geçmişi</button></div>
+              <div id="studioFieldsTab" class="studio-tab">
+                <div class="field-toolbar"><button class="button secondary" id="newDynamicField">＋ Yeni
+                    Alan</button><button class="button primary" id="saveDynamicFieldOrder">Sıralamayı Yayınla</button>
+                </div>
+                <div id="studioFieldList" class="field-list sortable-list"></div>
+              </div>
+              <div id="studioActionsTab" class="studio-tab" hidden>
+                <div class="field-toolbar"><button class="button secondary" id="newDynamicAction">＋ Yeni
+                    Eylem</button><button class="button primary" id="saveDynamicActionOrder">Eylem Sırasını
+                    Yayınla</button></div>
+                <div class="notice">Sil, Düzenle, Kaydet, Kopyala gibi eylemleri kullanılabilecek güvenli konumlara
+                  taşıyabilir, adını ve görünümünü değiştirebilirsiniz.</div>
+                <div id="studioActionList" class="field-list sortable-list"></div>
+              </div>
+              <div id="studioRulesTab" class="studio-tab" hidden>
+                <div class="field-toolbar"><button class="button secondary" id="newDynamicRule">＋ Yeni İş
+                    Kuralı</button></div>
+                <div id="studioRuleList" class="rule-list"></div>
+              </div>
+              <div id="studioHistoryTab" class="studio-tab" hidden>
+                <div id="platformHistoryList" class="history-list"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <aside class="drawer" id="detailDrawer" aria-hidden="true">
+    <div class="drawer-overlay" data-close-drawer></div>
+    <div class="drawer-panel">
+      <header>
+        <div><span class="eyebrow">Kurum ayrıntısı</span>
+          <h2 id="detailName">—</h2>
+        </div><button class="icon-button" type="button" data-close-drawer>×</button>
+      </header>
+      <div class="drawer-content" id="detailContent"></div>
+      <footer><button class="button danger" id="deleteInstitutionButton">Kurumu Sil</button><button
+          class="button secondary" id="editInstitutionButton">Kurumu Düzenle</button><button class="button primary"
+          id="addPanelButton">＋ Panel Ekle</button></footer>
+    </div>
+  </aside>
+
+  <dialog id="institutionDialog">
+    <form method="dialog" id="institutionForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Kurum kaydı</span>
+          <h2 id="institutionDialogTitle">Yeni kurum</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="row_version">
+        <section class="institution-photo-editor">
+          <div class="institution-photo-preview" id="institutionPhotoPreview"><span>Fotoğraf yok</span></div>
+          <div><strong>Kurum fotoğrafı</strong>
+            <p>Dış cephe, giriş veya turnike alanı fotoğrafını ekleyebilirsiniz. Liste görünümünde küçük fotoğraf sütunu
+              isteğe bağlıdır.</p><input id="institutionPhotoInput" type="file" accept="image/jpeg,image/png,image/webp"
+              hidden>
+            <div class="photo-actions"><button class="button secondary compact" type="button"
+                id="chooseInstitutionPhoto">Fotoğraf Seç</button><button class="button ghost compact" type="button"
+                id="removeInstitutionPhoto">Fotoğrafı Kaldır</button></div>
+          </div>
+        </section>
+        <div class="form-grid" id="institutionFormGrid"></div>
+        <section id="institutionCustomFields" class="custom-fields-section" hidden>
+          <h3>Özel alanlar</h3>
+          <div class="form-grid" id="institutionCustomFieldsGrid"></div>
+        </section>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="panelDialog">
+    <form method="dialog" id="panelForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Panel / terminal</span>
+          <h2 id="panelDialogTitle">Panel ekle</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="row_version"><input type="hidden"
+          name="institution_id">
+        <div class="form-grid"><label>Panel adı<input name="name"></label><label>Panel anahtarı <b>*</b><input
+              name="panel_key" required></label><label>Kapı adı<input name="gate_name"></label><label>Turnike
+            adedi<input name="turnstile_count" type="number" min="0"></label><label>Yerel IP<input
+              name="local_ip"></label><label>Son bağlantı<input name="last_seen"></label><label>Yazılım sürümü<input
+              name="software_version"></label><label>Veritabanı sürümü<input
+              name="database_version"></label><label>Kurulum tarihi<input name="installation_date"
+              type="date"></label><label>Kurulumu yapan<input name="installed_by"></label><label>Garanti bitişi<input
+              name="warranty_end" type="date"></label><label>Panel durumu<select name="status">
+              <option value=""></option>
+              <option>AKTİF</option>
+              <option>PASİF</option>
+              <option>ARIZALI</option>
+              <option>KURULUM AŞAMASINDA</option>
+            </select></label><label class="wide">Servis ve kurulum notları<textarea name="notes"
+              rows="3"></textarea></label></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Paneli Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="columnDialog">
+    <div class="modal-form column-modal">
+      <header>
+        <div><span class="eyebrow">Dinamik görünüm</span>
+          <h2 id="columnDialogTitle">Tablo sütunları</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <p class="helper">⠿ ile sürükleyin; adını, görünürlüğünü, genişliğini ve sabitlemesini tek yerden yönetin.</p>
+        <div id="columnSettingsList" class="column-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetColumns">Varsayılana Dön</button><button
+          class="button primary" type="button" id="saveColumns">Görünümü Kaydet</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="filterDialog">
+    <div class="modal-form column-modal">
+      <header>
+        <div><span class="eyebrow">Dinamik filtreleme</span>
+          <h2 id="filterDialogTitle">Filtreleri ayarla</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <p class="helper">⠿ ile sürükleyin; filtre adını, görünürlüğünü ve genişliğini yönetin. Her filtre çoklu seçim
+          veya aralık destekler.</p>
+        <div id="filterSettingsList" class="column-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetFilterSettings">Varsayılana Dön</button><button
+          class="button primary" type="button" id="saveFilterSettings">Filtreleri Kaydet</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="groupDialog">
+    <form method="dialog" id="groupForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Çatı kurum</span>
+          <h2>Kurum grubunu düzenle</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="form-grid"><label>Mevcut grup<select id="existingGroup">
+              <option value="">Yeni grup oluştur</option>
+            </select></label><label>Grup numarası<input name="group_number" type="number" min="1"></label><label
+            class="wide">Çatı kurum adı <b>*</b><input name="name" required></label><label>İl<select name="city"
+              id="groupCity">
+              <option value="">İl seçin</option>
+            </select></label><label>İlçe<select name="district" id="groupDistrict">
+              <option value="">İlçe seçin</option>
+            </select></label><label class="wide">Alt kurumlar<select id="groupInstitutions" name="institution_ids"
+              multiple size="14"></select></label><label class="wide">Notlar<textarea name="notes"
+              rows="2"></textarea></label><input type="hidden" name="id"><input type="hidden" name="row_version"></div>
+      </div>
+      <footer><button class="button danger" type="button" id="deleteGroup" hidden>Grubu Kaldır</button><button
+          class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Grubu Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="financeValuesDialog">
+    <form method="dialog" id="financeValuesForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Finans</span>
+          <h2 id="financeValuesTitle">Kurum finans bilgileri</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="institution_id">
+        <div class="form-grid" id="financeValuesGrid"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Finans Bilgilerini Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="financeFieldsDialog">
+    <div class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">Dinamik finans</span>
+          <h2>Finans alanları, formüller ve toplamlar</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="field-toolbar"><label class="bulk-check"><input type="checkbox" id="selectAllFinanceFields"> Tüm
+            alanları seç</label><button class="button danger compact" type="button" id="deleteSelectedFinanceFields"
+            disabled>Seçilenleri Arşivle</button></div>
+        <div id="financeFieldList" class="field-list sortable-list"></div>
+        <div class="field-toolbar"><button class="button secondary" type="button" id="newFinanceField">＋ Yeni
+            Alan</button><button class="button primary" type="button" id="saveFinanceFieldOrder">Sıralamayı
+            Kaydet</button><button class="button ghost" type="button" id="toggleFinanceFieldTrash">Silinen
+            Alanlar</button></div>
+        <div id="financeFieldTrash" class="field-trash" hidden></div>
+        <form id="financeFieldForm" class="inline-editor" hidden><input type="hidden" name="id">
+          <div class="form-grid"><label>Görünen alan adı <b>*</b><input name="label" required></label><label>Değişmeyen
+              alan anahtarı<input name="field_key" placeholder="Yeni alanda otomatik oluşur"></label><label>Veri
+              türü<select name="data_type">
+                <option value="text">Metin</option>
+                <option value="date">Tarih</option>
+                <option value="number">Sayı</option>
+                <option value="money">Para</option>
+                <option value="list">Seçim listesi</option>
+                <option value="multiselect">Çoklu seçim</option>
+                <option value="boolean">Evet/Hayır</option>
+                <option value="formula">Formül</option>
+              </select></label><label>Genel toplam işlemi<select name="aggregate_type">
+                <option value="none">Gösterme</option>
+                <option value="sum">Toplam</option>
+                <option value="avg">Ortalama</option>
+                <option value="min">En düşük</option>
+                <option value="max">En yüksek</option>
+                <option value="count">Dolu kayıt sayısı</option>
+              </select></label><label>Ondalık basamak<input name="decimal_places" type="number" min="0" max="6"
+                value="2"></label><label>Varsayılan değer<input name="default_value"></label><label
+              class="wide">Seçenekler<input name="options" placeholder="Virgülle ayırın"></label><label
+              class="wide">Formül<textarea name="formula" rows="2"
+                placeholder="sozlesme_kart_sayisi * birinci_kart_fiyati"></textarea></label>
+            <div class="wide formula-builder"><select id="formulaFieldPicker">
+                <option value="">Formüle alan ekle…</option>
+              </select><button type="button" data-formula-token=" + ">＋</button><button type="button"
+                data-formula-token=" - ">−</button><button type="button" data-formula-token=" * ">×</button><button
+                type="button" data-formula-token=" / ">÷</button><button type="button"
+                data-formula-token="(">(</button><button type="button" data-formula-token=")">)</button><button
+                type="button" data-formula-token="YUVARLA(, 2)">YUVARLA</button></div>
+            <p class="wide field-help" id="formulaHelp">Alan anahtarlarını seçin. Formül bütün mevcut ve yeni kurum
+              satırlarına otomatik uygulanır.</p><label class="check-label"><input name="visible" type="checkbox"
+                checked> Tabloda görünür</label><label class="check-label"><input name="filterable" type="checkbox"
+                checked> Filtrelenebilir</label><label class="check-label"><input name="required" type="checkbox">
+              Zorunlu alan</label><label class="check-label"><input name="active" type="checkbox" checked> Alan
+              aktif</label>
+          </div>
+          <div class="editor-actions"><button class="button ghost" type="button"
+              id="cancelFinanceField">Vazgeç</button><button class="button primary" type="submit">Alanı Kaydet</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="institutionTrashDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">Güvenli silme</span>
+          <h2>Kurum çöp kutusu</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <p class="helper">Kurumları geri yükleyebilir veya bağlı kayıt sayılarını gördükten sonra kalıcı silebilirsiniz.
+          Kalıcı silmeden önce otomatik yedek alınır.</p>
+        <div id="institutionTrashList" class="field-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Kapat</button><button class="button danger"
+          type="button" id="purgeSelectedInstitutions" disabled>Seçilenleri Kalıcı Sil</button><button
+          class="button danger" type="button" id="emptyInstitutionTrash" disabled>Çöp Kutusunu Boşalt</button><button
+          class="button primary" type="button" id="restoreSelectedInstitutions" disabled>Seçilenleri Geri Yükle</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="commissionDialog">
+    <form method="dialog" id="commissionForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Prim kuralı</span>
+          <h2>Dinamik prim ölçütü</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="form-grid"><label>Kural adı <b>*</b><input name="name" required></label><label>Satış
+            temsilcisi<select name="sales_person" id="commissionSalesPerson">
+              <option value="">Tüm temsilciler</option>
+            </select></label><label>Prim tabanı<select name="base_field_key" id="commissionBaseField"
+              required></select></label><label>Hesap türü<select name="calculation_type">
+              <option value="percent">Yüzde</option>
+              <option value="fixed">Sabit tutar</option>
+              <option value="per_unit">Birim başına</option>
+            </select></label><label>Oran / tutar <b>*</b><input name="rate" required inputmode="decimal"></label></div>
+        <div class="section-title">
+          <h3>Koşullar</h3><button class="button secondary compact" type="button" id="addCommissionCondition">＋
+            Koşul</button>
+        </div>
+        <div id="commissionConditions" class="condition-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Kuralı Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="importDialog">
+    <form method="dialog" class="modal-form" id="importForm">
+      <header>
+        <div><span class="eyebrow">Güvenli içe aktarma</span>
+          <h2>Excel’den güncelle</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="upload-box"><input id="xlsxFile" type="file" accept=".xlsx"><strong>Okul Güvenliği .xlsx dosyasını
+            seçin</strong><span>Onay vermeden kayıt değişmez.</span></div>
+        <div id="importProgress" class="notice" hidden>Dosya kontrol ediliyor…</div>
+        <div id="importPreview" hidden></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          id="commitImport" type="button" disabled>Değişiklikleri Uygula</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="customFieldDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">Dinamik yapı</span>
+          <h2>Kurum alanları</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div id="customFieldList" class="field-list sortable-list"></div>
+        <div class="field-toolbar"><button class="button secondary" type="button" id="newCustomField">＋ Yeni
+            Alan</button><button class="button primary" type="button" id="saveCustomFieldOrder">Sıralamayı
+            Kaydet</button><button class="button ghost" type="button" id="toggleCustomFieldTrash">Silinen
+            Alanlar</button></div>
+        <div id="customFieldTrash" class="field-trash" hidden></div>
+        <form id="customFieldForm" class="inline-editor" hidden><input type="hidden" name="id"><input type="hidden"
+            name="entity_type" value="institution">
+          <div class="form-grid"><label>Alan adı <b>*</b><input name="label" required></label><label>Veri türü<select
+                name="data_type">
+                <option value="text">Metin</option>
+                <option value="date">Tarih</option>
+                <option value="number">Sayı</option>
+                <option value="list">Seçim listesi</option>
+                <option value="boolean">Evet / Hayır</option>
+              </select></label><label class="wide">Liste seçenekleri<input name="options"></label><label
+              class="check-label"><input name="required" type="checkbox"> Zorunlu alan</label></div>
+          <div class="editor-actions"><button class="button ghost" type="button"
+              id="cancelCustomField">Vazgeç</button><button class="button primary" type="submit">Alanı Kaydet</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="institutionFormSettingsDialog">
+    <div class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">Güvenli form tasarımı</span>
+          <h2>Kurum formu alanları</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <p class="helper">Alanları taşıyın; görünen ad, zorunluluk, varsayılan değer, genişlik ve görünürlüğü
+          değiştirin. Teknik anahtarlar arka planda korunur.</p>
+        <div id="institutionFormSettingsList" class="form-settings-list sortable-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetInstitutionForm">Varsayılana Dön</button><button
+          class="button primary" type="button" id="saveInstitutionForm">Formu Kaydet</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="lookupDialog">
+    <div class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">Tek kaynaklı tanımlar</span>
+          <h2>Tanım listeleri</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body lookup-layout">
+        <aside><label>Tanım grubu<select id="lookupCategorySelect"></select></label><label>Grup adı<input
+              id="lookupCategoryLabel"></label><button class="button secondary" type="button"
+            id="saveLookupCategory">Grup Adını Kaydet</button>
+          <p class="field-help">Formlar, filtreler, Finans ve Prim aynı listedeki değerleri kullanır.</p>
+        </aside>
+        <section>
+          <div class="field-toolbar"><button class="button secondary" type="button" id="newLookupItem">＋ Yeni
+              Değer</button><button class="button primary" type="button" id="saveLookupOrder">Sıralamayı Kaydet</button>
+          </div>
+          <div id="lookupItemList" class="field-list sortable-list"></div>
+          <form id="lookupItemForm" class="inline-editor" hidden><input type="hidden" name="id"><input type="hidden"
+              name="category_key">
+            <div class="form-grid"><label>Görünen ad <b>*</b><input name="label" required></label><label>Renk<input
+                  name="color" type="color" value="#15865d"></label><label id="lookupParentWrap" hidden>Üst değer<select
+                  name="parent_item_key"></select></label><label class="check-label"><input name="active"
+                  type="checkbox" checked> Aktif</label></div>
+            <div class="editor-actions"><button class="button ghost" type="button"
+                id="cancelLookupItem">Vazgeç</button><button class="button primary" type="submit">Değeri Kaydet</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="financeCardsDialog">
+    <div class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">Dinamik özet</span>
+          <h2>Finans özet kartları</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <p class="helper">Kart ekleyin; başlığını, değerini, biçimini, rengini ve sırasını yönetin.</p>
+        <div id="financeCardList" class="field-list sortable-list"></div>
+        <div class="field-toolbar"><button class="button secondary" type="button" id="newFinanceCard">＋ Yeni
+            Kart</button><button class="button primary" type="button" id="saveFinanceCardOrder">Sıralamayı
+            Kaydet</button></div>
+        <form id="financeCardForm" class="inline-editor" hidden><input type="hidden" name="id">
+          <div class="form-grid"><label>Kart başlığı <b>*</b><input name="label" required></label><label>Gösterilecek
+              değer<select name="metric" id="financeCardMetric"></select></label><label>Biçim<select name="format">
+                <option value="number">Sayı</option>
+                <option value="money">Para</option>
+                <option value="percent">Yüzde</option>
+              </select></label><label>Renk<select name="color">
+                <option value="neutral">Sade</option>
+                <option value="success">Yeşil</option>
+                <option value="warning">Turuncu</option>
+                <option value="danger">Kırmızı</option>
+                <option value="blue">Mavi</option>
+              </select></label><label class="wide">Alt açıklama<input name="subtitle"></label><label
+              class="check-label"><input name="visible" type="checkbox" checked> Görünür</label></div>
+          <div class="editor-actions"><button class="button ghost" type="button"
+              id="cancelFinanceCard">Vazgeç</button><button class="button primary" type="submit">Kartı Kaydet</button>
+          </div>
+        </form>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetFinanceCards">Varsayılana Dön</button><button
+          class="button primary" type="button" id="persistFinanceCards">Kartları Kaydet</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="navigationDialog">
+    <div class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">Sayfa düzeni</span>
+          <h2>Sayfa ve menü yönetimi</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div id="navigationSettingsList" class="navigation-settings-list sortable-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetNavigation">Varsayılana Dön</button><button
+          class="button primary" type="button" id="saveNavigation">Menüyü Kaydet</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="themeDialog">
+    <form id="themeForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">Canlı ön izleme</span>
+          <h2>Tema stüdyosu</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="theme-grid"><label>Ana renk<input name="primary" type="color"></label><label>Koyu ana renk<input
+              name="primary_dark" type="color"></label><label>Arka plan<input name="background"
+              type="color"></label><label>Kart zemini<input name="surface" type="color"></label><label>Metin<input
+              name="text" type="color"></label><label>İkincil metin<input name="muted" type="color"></label><label>Uyarı
+            rengi<input name="danger" type="color"></label><label>Sol menü<input name="sidebar"
+              type="color"></label><label>Yazı büyüklüğü (%)<input name="font_scale" type="number" min="85"
+              max="120"></label><label>Yoğunluk<select name="density">
+              <option value="compact">Sıkı</option>
+              <option value="normal">Normal</option>
+              <option value="comfortable">Ferah</option>
+            </select></label><label>Köşe yuvarlaklığı<input name="radius" type="number" min="0"
+              max="24"></label><label>Menü genişliği<input name="sidebar_width" type="number" min="190"
+              max="320"></label></div>
+        <div class="theme-preview"><strong>Canlı ön izleme</strong><span>Değişiklikler kaydetmeden önce ekrana
+            uygulanır.</span><button class="button primary" type="button">Örnek düğme</button></div>
+      </div>
+      <footer><button class="button ghost" type="button" id="resetTheme">Varsayılana Dön</button><button
+          class="button primary" type="submit">Temayı Kaydet</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="settingsHistoryDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">Güvenli geri alma</span>
+          <h2>Ayar geçmişi</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><label>Ayar bölümü<select id="settingsHistoryKey">
+            <option value="institution_form_fields">Kurum formu</option>
+            <option value="dynamic_filters">Kurum filtreleri</option>
+            <option value="table_columns">Kurum sütunları</option>
+            <option value="finance_filters">Finans filtreleri</option>
+            <option value="finance_table_columns">Finans sütunları</option>
+            <option value="finance_summary_cards">Finans kartları</option>
+            <option value="finance_saved_views">Finans görünümleri</option>
+            <option value="navigation_preferences">Sayfa ve menü</option>
+            <option value="theme_preferences">Tema</option>
+          </select></label>
+        <div id="settingsHistoryList" class="history-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Kapat</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="financeViewsDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">Hızlı erişim</span>
+          <h2>Kaydedilmiş finans görünümleri</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="view-current-summary"><strong>Şu anda kaydedilecek düzen</strong>
+          <div id="currentFinanceViewSummary"></div>
+        </div>
+        <form id="financeViewForm" class="view-save-row"><input name="name" required
+            placeholder="Örn. Gaziantep borçlu kurumlar"><button class="button primary" type="submit">Mevcut Görünümü
+            Kaydet</button></form>
+        <div id="financeViewsList" class="field-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Kapat</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="backupDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">Veri güvenliği</span>
+          <h2>Yedekler</h2>
+        </div><button class="icon-button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="notice success">Kritik değişikliklerden önce doğrulanmış yedek alınır.</div>
+        <div id="backupList" class="backup-list"></div>
+      </div>
+      <footer><button class="button ghost" data-close-dialog>Kapat</button><button class="button primary"
+          id="createBackup">Şimdi Yedekle</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="dynamicRecordDialog">
+    <form id="dynamicRecordForm" class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">DİNAMİK KAYIT</span>
+          <h2 id="dynamicRecordDialogTitle">Yeni kayıt</h2>
+        </div>
+        <div class="top-actions"><span id="dynamicFormHeaderActions" class="dynamic-action-area"></span><button
+            class="icon-button" type="button" data-close-dialog>×</button></div>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="row_version">
+        <div id="dynamicRecordGrid" class="form-grid"></div>
+        <div class="notice formula-notice">ƒx işaretli alanlar kaydettiğinizde bütün satırlar için otomatik hesaplanır.
+        </div>
+      </div>
+      <footer><span id="dynamicFormFooterActions" class="dynamic-action-area"></span></footer>
+    </form>
+  </dialog>
+
+  <dialog id="dynamicModuleDialog">
+    <form id="dynamicModuleForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">BÖLÜM TASARIMI</span>
+          <h2>Dinamik bölüm</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id">
+        <div class="form-grid"><label>Bölüm adı <b>*</b><input name="label" required
+              placeholder="Örn. Teklifler"></label><label>Tekil kayıt adı<input name="singular_label"
+              placeholder="Örn. Teklif"></label><label>Menü simgesi<input name="icon" maxlength="4"
+              value="▦"></label><label>Renk<input name="color" type="color" value="#15865d"></label><label
+            class="wide">Açıklama<textarea name="description" rows="3"></textarea></label><label
+            class="check-label"><input name="menu_visible" type="checkbox" checked> Sol menüde göster</label><label
+            class="check-label"><input name="active" type="checkbox" checked> Bölüm aktif</label></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Ön İzle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="dynamicFieldDialog">
+    <form id="dynamicFieldForm" class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">ALAN TASARIMI</span>
+          <h2>Alan veya formül</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="module_id">
+        <div class="form-grid"><label>Alan adı <b>*</b><input name="label" required></label><label>Alan anahtarı<input
+              name="field_key" placeholder="Yeni alanda otomatik oluşur"></label><label>Alan türü<select
+              name="data_type">
+              <option value="text">Kısa metin</option>
+              <option value="longtext">Uzun metin</option>
+              <option value="number">Sayı</option>
+              <option value="money">Para</option>
+              <option value="date">Tarih</option>
+              <option value="boolean">Evet / Hayır</option>
+              <option value="select">Seçim listesi</option>
+              <option value="multiselect">Çoklu seçim</option>
+              <option value="relation">Başka kayıtla ilişki</option>
+              <option value="formula">Hesaplanan formül</option>
+            </select></label><label>Toplam işlemi<select name="aggregate_type">
+              <option value="none">Gösterme</option>
+              <option value="sum">Toplam</option>
+              <option value="avg">Ortalama</option>
+              <option value="min">En düşük</option>
+              <option value="max">En yüksek</option>
+              <option value="count">Dolu kayıt sayısı</option>
+            </select></label><label>Ondalık<input name="decimal_places" type="number" min="0" max="6"
+              value="2"></label><label>Sütun genişliği<input name="width" type="number" min="80" max="520"
+              value="160"></label><label class="wide">Liste seçenekleri<input name="options"
+              placeholder="Virgülle ayırın"></label><label>İlişki hedefi<select name="relation_target"
+              id="dynamicRelationTarget"></select></label><label>Varsayılan değer<input
+              name="default_value"></label><label class="wide">Formül<textarea name="formula" rows="3"
+              placeholder="tutar - tahsilat"></textarea></label>
+          <div class="wide formula-builder" id="dynamicFormulaBuilder"></div>
+          <p class="wide field-help">Formül örneği: <code>EGER(mevcut_stok &lt;= kritik_seviye, 1, 0)</code>. Serbest
+            kod çalıştırılmaz.</p><label class="check-label"><input name="required" type="checkbox">
+            Zorunlu</label><label class="check-label"><input name="visible" type="checkbox" checked> Tabloda
+            görünür</label><label class="check-label"><input name="filterable" type="checkbox" checked>
+            Filtrelenebilir</label><label class="check-label"><input name="is_title" type="checkbox"> Kayıt
+            başlığı</label><label class="check-label"><input name="active" type="checkbox" checked> Aktif</label>
+        </div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Ön İzle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="dynamicRuleDialog">
+    <form id="dynamicRuleForm" class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">İŞ KURALI</span>
+          <h2>“Bu olursa şunu yap”</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="module_id">
+        <div class="form-grid"><label class="wide">Kural adı <b>*</b><input name="name" required
+              placeholder="Örn. Acil servis kaydını işlemde yap"></label><label class="check-label"><input name="active"
+              type="checkbox" checked> Kural aktif</label></div>
+        <div class="section-title">
+          <h3>Koşullar</h3><button class="button secondary compact" type="button" id="addDynamicCondition">＋
+            Koşul</button>
+        </div>
+        <div id="dynamicRuleConditions" class="condition-list"></div>
+        <div class="section-title">
+          <h3>Yapılacak işlemler</h3><button class="button secondary compact" type="button" id="addDynamicAction">＋
+            İşlem</button>
+        </div>
+        <div id="dynamicRuleActions" class="condition-list"></div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Ön İzle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="dynamicActionDialog">
+    <form id="dynamicActionForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">EYLEM TASARIMI</span>
+          <h2>Buton / eylem</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body"><input type="hidden" name="id"><input type="hidden" name="module_id">
+        <div class="form-grid"><label>Eylem adı <b>*</b><input name="label" required
+              placeholder="Örn. Sil"></label><label>İşlem türü<select name="action_type">
+              <option value="new_record">Yeni kayıt aç</option>
+              <option value="edit_record">Kaydı düzenle</option>
+              <option value="save_record">Kaydet</option>
+              <option value="archive_record">Sil / arşivle</option>
+              <option value="duplicate_record">Kaydı kopyala</option>
+              <option value="export_xlsx">Excel indir</option>
+              <option value="cancel_form">Formu kapat / vazgeç</option>
+            </select></label><label>Konum<select name="placement">
+              <option value="page_top">Sayfa üstü</option>
+              <option value="row">Kayıt satırı</option>
+              <option value="form_header">Form üstü</option>
+              <option value="form_footer">Form altı</option>
+            </select></label><label>Görünüm<select name="style">
+              <option value="primary">Ana düğme</option>
+              <option value="secondary">İkincil</option>
+              <option value="ghost">Sade</option>
+              <option value="danger">Tehlikeli / kırmızı</option>
+            </select></label><label>Simge<input name="icon" maxlength="4" placeholder="✓"></label><label
+            class="wide">Onay mesajı<input name="confirmation_text"
+              placeholder="Örn. Bu kayıt arşive alınsın mı?"></label><label class="check-label"><input name="active"
+              type="checkbox" checked> Eylem aktif</label></div>
+        <p class="helper">Güvenlik nedeniyle her işlem yalnızca anlamlı olduğu yerlere taşınabilir. Örneğin Kaydet form
+          üstü/altında; Sil satırda veya seçili kayıtlarla sayfa üstünde çalışır.</p>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Ön İzle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="assistantSettingsDialog">
+    <form id="assistantSettingsForm" class="modal-form">
+      <header>
+        <div><span class="eyebrow">GÜVENLİ AI MODELİ BAĞLANTISI</span>
+          <h2>LOGOS AI Asistan Model & API Ayarları</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div id="assistantSettingsStatus" class="notice success">Bağlantı durumu yükleniyor…</div><label>AI Modeli
+          Sağlayıcısı<select name="model">
+            <option value="gemini-2.0-flash">✨ Google Gemini 2.0 Flash (Hızlı & Güçlü ⭐)</option>
+            <option value="gemini-1.5-pro">✨ Google Gemini 1.5 Pro (Yüksek Zeka)</option>
+            <option value="gemini-1.5-flash">✨ Google Gemini 1.5 Flash (Dengeli)</option>
+            <option value="gpt-5.6">OpenAI GPT-5.6 Sol</option>
+          </select></label><label>Gemini / OpenAI API Anahtarı<input name="api_key" type="password"
+            autocomplete="new-password"
+            placeholder="Gemini (AIza...) veya OpenAI (sk-...) Anahtarınız"><small>Kaydedilmiş anahtar ekrana geri
+            gönderilmez. Windows DPAPI ile şifrelenerek korunur.</small></label><label class="checkbox-row"><input
+            name="clear_key" type="checkbox"> Kaydedilmiş API anahtarını kaldır</label>
+        <div class="notice"><strong>Güvenlik sınırı:</strong><br>AI Asistan yalnız plan üretir ve verileri analiz eder.
+          Python, JavaScript, SQL veya doğrudan veritabanı silme yetkisi verilmez.</div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">Ayarları Güvenle Kaydet</button></footer>
+    </form>
+  </dialog>
+
+
+  <dialog id="logosAssistantDialog">
+    <form id="logosAssistantForm" class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">LOGOS ASİSTAN VISION 5.0 · OPENAI + GÜVENLİ ÇEKİRDEK</span>
+          <h2>Yaz, görsel ekle, incelet ve güvenle uygula</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="assistant-status-row"><span id="logosAssistantMode" class="assistant-mode">Bağlantı kontrol
+            ediliyor…</span><span class="assistant-safety-badge">AI doğrudan kod/SQL çalıştıramaz</span></div>
+        <label>İstek<textarea name="command" rows="5" required
+            placeholder="Örn. Bu görselde satırın sağ tarafına Sil butonu eklemek uygun mu? Uygunsa güvenli plan hazırla."></textarea></label>
+        <div class="assistant-vision-grid"><label class="assistant-upload">Ekran görüntüsü / görsel <input
+              id="logosAssistantImage" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG veya WEBP.
+              Görsel yalnız siz gönderdiğinizde analiz için kullanılır.</small></label>
+          <div id="logosAssistantImagePreview" class="assistant-image-preview"><span>Görsel eklenmedi</span></div>
+        </div>
+        <div id="logosAssistantReply" class="assistant-reply" hidden></div>
+        <div class="notice success"><strong>Fail-safe çalışma:</strong><br>Asistan yalnız izinli LOGOS işlemlerinden
+          plan oluşturur. Siz “Onayla ve Yayınla” demeden değişiklik yapılmaz; yayın öncesi doğrulanmış yedek alınır ve
+          hata olursa otomatik geri dönüş denenir.</div>
+        <div class="helper">Görsel ile “buraya Sil ekle”, “bu düzen uygun mu?”, “şu alanı yukarı taşı” gibi kısa
+          cümleler yazabilirsiniz. Hedef belirsizse asistan değişiklik yapmak yerine açıklama ister.</div>
+      </div>
+      <footer><button class="button ghost" type="button" id="clearAssistantImage">Görseli Kaldır</button><button
+          class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit">İncele ve Ön İzle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="platformChangePreviewDialog">
+    <div class="modal-form">
+      <header>
+        <div><span class="eyebrow">GÜVENLİ YAYIN</span>
+          <h2>Değişikliği onaylayın</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="change-preview-card"><strong id="platformChangeSummary">—</strong><span
+            id="platformChangeImpact">—</span><span id="platformChangeRisk" class="risk-badge" hidden></span>
+          <div id="platformChangeOperations" class="assistant-plan-list"></div>
+          <div id="platformChangeWarnings"></div>
+        </div>
+        <p class="helper">Onayladığınızda otomatik yedek alınır. Asistan planı yarıda hata verirse güvenli çekirdek
+          işlem öncesi yedeğe dönmeyi dener.</p>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="button" id="commitPlatformChange">Onayla ve Yayınla</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="portalSyncDialog">
+    <form id="portalSyncForm" class="modal-form wide-modal">
+      <header>
+        <div><span class="eyebrow">CANLI WEB SENKRONİZASYONU</span>
+          <h2>okulguvenligi.com Canlı Veri Çekme</h2>
+        </div><button class="icon-button" type="button" data-close-dialog>×</button>
+      </header>
+      <div class="form-body">
+        <div class="notice success"><strong>okulguvenligi.com/uye/panel/kurumlar</strong> sayfasındaki tüm kurum, panel,
+          IP, kamera ve temsilci verileri otomatik çekilir.</div>
+        <div id="portalAutoSyncBanner" class="assistant-status-row" style="margin-bottom:12px;"><span
+            id="portalAutoSyncStatusText" class="assistant-mode">Otomatik Çekim: Yükleniyor…</span></div>
+        <div class="form-grid"><label class="wide">Senkronizasyon Yöntemi<select id="portalSyncMode">
+              <option value="interactive">1. Canlı Giriş Yap & SMS Onayla (Otomatik Oturum Çerez Çekimi ⭐)</option>
+              <option value="text">2. Web Sayfası Metnini / HTML Kaynağını Yapıştır (Anında)</option>
+              <option value="cookie">3. Oturum Çerezi (Cookie) Manuel Yapıştır</option>
+              <option value="browser">4. Açık Tarayıcı Sekmesinden Otomatik Çek (Otomatik Kod)</option>
+            </select></label></div>
+        <div id="portalSyncInteractiveSection">
+          <div class="form-grid"><label>E-Posta / Kullanıcı Adı <b>*</b><input type="text" id="portalInterUsername"
+                placeholder="okulguvenligi.com kullanıcı adınız"></label><label>Şifre <b>*</b><input type="password"
+                id="portalInterPassword" placeholder="Şifreniz"></label><label>Otomatik Çekim Sıklığı<select
+                id="portalInterInterval">
+                <option value="15">15 Dakikada Bir</option>
+                <option value="30" selected>30 Dakikada Bir (Önerilen)</option>
+                <option value="60">60 Dakikada Bir (1 Saat)</option>
+                <option value="120">2 Saatte Bir</option>
+              </select></label></div>
+          <div style="margin-top:12px;"><button class="button primary" type="button" id="btnStartSmsLogin">📱 1. Adım:
+              Giriş Yap ve SMS Kodu Gönder</button></div>
+          <div id="portalSmsCodeStep" hidden
+            style="margin-top:16px;padding:16px;background:rgba(21,134,93,0.08);border:1px solid #15865d;border-radius:8px;">
+            <div class="notice success" style="margin-bottom:12px;"><strong id="portalSmsMessage">📲 SMS Doğrulama Kodu
+                Telefonunuza Gönderildi!</strong></div><input type="hidden" id="portalSmsSessionId">
+            <div class="form-grid"><label class="wide">Telefonunuza Gelen SMS Doğrulama Kodu <b>*</b><input type="text"
+                  id="portalSmsCodeInput" autocomplete="one-time-code" placeholder="Örn: 485921"
+                  style="font-size:18px;letter-spacing:2px;font-weight:bold;"></label></div>
+            <div style="margin-top:12px;"><button class="button primary" type="button" id="btnVerifySmsCode"
+                style="background:#15865d;color:#fff;">✅ 2. Adım: SMS Kodunu Onayla & 30 Dk Otomatik Görevi
+                Başlat</button></div>
+          </div>
+        </div>
+        <div id="portalSyncTextSection" hidden><label><strong>okulguvenligi.com</strong> sayfasından kopyaladığınız
+            metni veya HTML kaynağını buraya yapıştırın:<textarea id="portalSyncContent" rows="10"
+              placeholder="Sayfadaki tüm metni (Ctrl+A -> Ctrl+C) veya HTML kaynağını buraya kopyalayıp yapıştırın..."></textarea></label>
+        </div>
+        <div id="portalSyncCookieSection" hidden>
+          <div class="form-grid"><label class="wide">Oturum Çerezi (Cookie / PHPSESSID) <b>*</b><input type="text"
+                id="portalCookieString" placeholder="PHPSESSID=abc123xyz..."></label><label>Otomatik Çekim
+              Sıklığı<select id="portalCookieInterval">
+                <option value="15">15 Dakikada Bir</option>
+                <option value="30" selected>30 Dakikada Bir (Önerilen)</option>
+                <option value="60">60 Dakikada Bir</option>
+              </select></label><label class="check-label wide" style="margin-top:8px;"><input type="checkbox"
+                id="portalCookieEnabled" checked> <strong>30 Dakikada Bir Otomatik Çekimi Aktif Et</strong></label>
+          </div>
+        </div>
+        <div id="portalSyncBrowserSection" hidden>
+          <div class="notice"><strong>Açık Tarayıcı Sekmesinden Otomatik Çekim:</strong><br>okulguvenligi.com sekmesinde
+            F12 (Geliştirici Araçları) -> Console alanına yapıştırın:</div><label>Tarayıcı Konsol Kodu:<textarea
+              id="portalBrowserScript" rows="6" readonly></textarea></label><button class="button secondary compact"
+            type="button" id="copyBrowserScript">Kodu Kopyala</button>
+        </div>
+      </div>
+      <footer><button class="button ghost" type="button" data-close-dialog>Vazgeç</button><button class="button primary"
+          type="submit" id="portalSyncSubmitBtn">Verileri Çek ve Güncelle</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="logosAiRobotDialog"
+    style="background: transparent; border: none; padding: 0; outline: none; box-shadow: none; overflow: hidden;">
+    <div class="modal-form wide-modal ai-robot-modal"
+      style="background: #0f172a; color: #f8fafc; border: 1px solid #0284c7; border-radius: 16px; box-shadow: 0 0 35px rgba(2,132,199,0.35); max-width: 780px; width: 100%; display:flex; flex-direction:column;">
+      <!-- HEADER -->
+      <header style="background: linear-gradient(135deg, #0284c7, #0f766e); padding: 14px 20px; border-top-left-radius: 15px; border-top-right-radius: 15px; display: flex; justify-content: space-between; align-items: center; flex-shrink:0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(56,189,248,0.5);">
+            <svg class="robot-head-anim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2" fill="#38bdf8"></circle><path d="M12 7v4"></path>
+              <line x1="8" y1="16" x2="8.01" y2="16" stroke="#34d399" stroke-width="3"></line><line x1="16" y1="16" x2="16.01" y2="16" stroke="#34d399" stroke-width="3"></line>
+            </svg>
+          </div>
+          <div>
+            <span style="color:#bae6fd;font-size:10px;letter-spacing:1px;font-weight:600;display:block;">LOGOS TECH · CANLI AI ASISTANI</span>
+            <h2 style="color:#fff;margin:0;font-size:17px;font-weight:700;">🤖 Gemini Powered AI Asistan</h2>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <!-- Live sync time badge -->
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(16,185,129,0.4);border-radius:8px;padding:4px 10px;text-align:center;min-width:130px;">
+            <div style="color:#94a3b8;font-size:9px;font-weight:600;">📅 SON VERİ ÇEKİMİ</div>
+            <strong id="aiLastSyncTime" style="font-size:13px;color:#34d399;display:block;line-height:1.2;">Yükleniyor…</strong>
+            <span id="aiAutoSyncBadge" style="font-size:9px;color:#94a3b8;"></span>
+          </div>
+          <button class="button secondary compact" type="button" id="btnOpenGeminiSettings"
+            style="background:rgba(168,85,247,0.25);color:#e9d5ff;border:1px solid #a855f7;font-size:11px;">🔑 API Key</button>
+          <button class="icon-button" type="button" data-close-dialog style="color:#fff;font-size:22px;background:none;border:none;cursor:pointer;line-height:1;">×</button>
+        </div>
+      </header>
+
+      <!-- TAB BAR -->
+      <div id="aiTabBar" style="display:flex;background:#0a1628;border-bottom:1px solid #1e293b;flex-shrink:0;">
+        <button id="aiTab_chat" onclick="switchAiTab('chat')" style="flex:1;padding:10px 0;font-size:13px;font-weight:700;background:transparent;border:none;border-bottom:3px solid #0284c7;color:#38bdf8;cursor:pointer;">
+          💬 Sohbet & Giriş
+        </button>
+        <button id="aiTab_faults" onclick="switchAiTab('faults')" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:transparent;border:none;border-bottom:3px solid transparent;color:#64748b;cursor:pointer;">
+          🚨 Hatalı Kurumlar <span id="aiFaultCountBadge" style="background:#991b1b;color:#fca5a5;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;"></span>
+        </button>
+      </div>
+
+      <!-- TAB: CHAT -->
+      <div id="aiTabContent_chat" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <!-- Quick chips -->
+        <div style="padding:10px 16px 0;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
+          <button type="button" id="chipStartPortalSync" style="background:rgba(2,132,199,0.2);color:#38bdf8;border:1px solid #0284c7;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;font-weight:600;">📱 Giriş Yap & SMS İste</button>
+          <button type="button" id="chipInputSmsCode" style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid #10b981;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;font-weight:600;">💬 SMS Kodunu Gir</button>
+          <button type="button" id="chipTriggerSyncNow" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid #f59e0b;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;font-weight:600;">🔄 Portaldan Veri Çek</button>
+          <button type="button" id="chipAnalyzeFaults" style="background:rgba(168,85,247,0.2);color:#e9d5ff;border:1px solid #a855f7;border-radius:14px;padding:4px 11px;font-size:11px;cursor:pointer;font-weight:600;">🧠 Hataları Analiz Et</button>
+        </div>
+        <!-- Chat feed -->
+        <div id="aiChatFeed" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;min-height:200px;max-height:340px;">
+          <div style="align-self:flex-start;background:#1e293b;color:#f8fafc;border-radius:10px;padding:10px 14px;font-size:13px;max-width:88%;border-left:3px solid #0284c7;">
+            <strong style="color:#38bdf8;display:block;font-size:11px;margin-bottom:4px;">🤖 LOGOS TECH AI (Gemini)</strong>
+            Merhaba! okulguvenligi.com'a giriş yapmamı, SMS doğrulama kodunu doğrulamamı veya hatalı kurumları analiz etmemi isteyebilirsiniz.<br>
+            <span style="color:#64748b;font-size:11px;">💡 Örn: "veri çek", "giriş yap", "485921", "analiz yap"</span>
+          </div>
+        </div>
+        <!-- Chat input -->
+        <div style="padding:10px 16px;background:#090d16;border-top:1px solid #1e293b;display:flex;gap:8px;align-items:center;flex-shrink:0;">
+          <input type="text" id="aiChatInput"
+            placeholder="Yazın: 'veri çek' · 'giriş yap' · 'SMS kodu 485921' · veya herhangi bir soru…"
+            style="flex:1;background:#0f172a;color:#f8fafc;border:1px solid #0284c7;border-radius:8px;padding:9px 13px;font-size:13px;outline:none;">
+          <button class="button primary compact" type="button" id="btnAiSendMessage"
+            style="background:linear-gradient(135deg,#0284c7,#a855f7);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer;white-space:nowrap;">🚀 Gönder</button>
+        </div>
+      </div>
+
+      <!-- TAB: FAULTS -->
+      <div id="aiTabContent_faults" style="flex:1;display:none;flex-direction:column;min-height:0;">
+        <!-- Gemini analysis box -->
+        <div style="padding:12px 16px 0;flex-shrink:0;">
+          <div id="aiGeminiThinkingBox" style="background:linear-gradient(135deg,rgba(14,165,233,0.12),rgba(168,85,247,0.15));border:1px solid #a855f7;border-radius:10px;padding:10px 14px;box-shadow:0 0 16px rgba(168,85,247,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="color:#e9d5ff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;">🧠 GEMİNİ AI KÖK NEDEN ANALİZİ</span>
+              <span id="geminiModelBadge" style="background:#581c87;color:#f3e8ff;font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid #a855f7;">Gemini 2.0 Flash</span>
+            </div>
+            <div id="geminiReasoningText" style="color:#f3e8ff;font-size:12px;line-height:1.5;">Yükleniyor…</div>
+          </div>
+        </div>
+        <!-- Filter row -->
+        <div style="padding:10px 16px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-shrink:0;">
+          <strong style="color:#f8fafc;font-size:12px;display:flex;align-items:center;gap:5px;"><span style="color:#ef4444;">🚨</span> Filtrele:</strong>
+          <select id="aiFaultyFilterMode" style="flex:1;background:#0f172a;color:#38bdf8;border:1px solid #0284c7;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;cursor:pointer;">
+            <option value="latest" selected>⚡ En Son Hatalı Kurum (1 Adet)</option>
+            <option value="last_5">🔥 Son 5 Hatalı Kurum</option>
+            <option value="last_10">📋 Son 10 Hatalı Kurum</option>
+            <option value="iptal">🚫 Sadece Sözleşme İptalleri</option>
+            <option value="odeme">💳 Sadece Ödeme Hataları</option>
+            <option value="camera">📹 Sadece Kamera Arızaları</option>
+            <option value="all">📊 Tüm Hatalı Kurumlar</option>
+          </select>
+        </div>
+        <!-- Fault list -->
+        <div id="aiFaultyList" style="flex:1;overflow-y:auto;padding:0 16px 12px;min-height:180px;">
+          <div style="text-align:center;color:#64748b;padding:20px;">Yükleniyor…</div>
+        </div>
+        <!-- Fault tab footer -->
+        <div style="padding:10px 16px;background:#090d16;border-top:1px solid #1e293b;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-shrink:0;">
+          <button class="button secondary compact" type="button" id="btnAiFilterFaulty"
+            style="background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;font-size:11px;">🔍 Ana Listede Filtrele</button>
+          <button class="button secondary compact" type="button" id="btnAiTriggerSync"
+            style="background:#0284c7;color:#fff;font-size:11px;">🔄 Şimdi Veri Çek & Yenile</button>
+        </div>
+      </div>
+
+      <!-- GLOBAL FOOTER -->
+      <footer style="background:#0f172a;border-top:1px solid #1e293b;padding:8px 20px;display:flex;justify-content:flex-end;border-bottom-left-radius:15px;border-bottom-right-radius:15px;flex-shrink:0;">
+        <button class="button ghost compact" type="button" data-close-dialog style="color:#94a3b8;font-size:12px;">Kapat</button>
+      </footer>
+    </div>
+  </dialog>
+
+
+
+
+
+
+
+
+
+
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/assets/app.js"></script>
+</body>
+
+</html>

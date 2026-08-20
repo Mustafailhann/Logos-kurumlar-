@@ -1,0 +1,70 @@
+LOGOS TECH 5.0.0-alpha.1 – TEST RAPORU
+Tarih: 19.08.2026
+
+1) OTOMATİK REGRESYON
+- Toplam: 59 test
+- Başarılı: 59
+- Hata: 0
+- Başarısız: 0
+- Atlanan: 0
+- Tek çalıştırma süresi: yaklaşık 31.37 sn
+- Test prosesi üretimdeki daemon HTTP thread davranışıyla temiz biçimde kapandı.
+
+2) 4.5 REGRESYON KAPSAMI
+- Kurum / grup / panel
+- Excel içe/dışa aktarma ve anonim fixture
+- Finans / formül / prim
+- Ayarlar / sütun / filtre / tanım listeleri
+- HTTP mutation token güvenliği
+- Dinamik modül / alan / görünüm / geçmiş
+- Eylem Motoru ve toplu arşiv
+- Sayı/para doğrulaması + iş kuralı sonrası ikinci doğrulama
+- Kurum fotoğrafı / medya
+- Kalıcı bölüm silme
+- Üst scrollbar kaynak sözleşmesi
+
+3) VISION 5.0 YENİ TESTLERİ
+- Strict OpenAI function tool payload sözleşmesi.
+- Metin + base64 image payload.
+- OpenAI function_call -> semantik ChangePlan ayrıştırması.
+- Bağımlı çok adımlı planın gerçek DB'ye dokunmadan gölge DB'de denenmesi.
+- Plan yayınlama ve bütünlük kontrolü.
+- İkinci adım kasıtlı başarısız olduğunda işlem öncesi yedeğe otomatik restore.
+- AI'nin korunan core modüle yapısal müdahalesinin engellenmesi.
+- AI'nin kalıcı silme işlemi oluşturmasının engellenmesi.
+- OpenAI yokken görsel komutun hiçbir değişiklik yapmaması.
+- Fake Vision planner ile HTTP preview token + güvenli commit.
+- OpenAI ayarlarının HTTP üzerinden kodsuz kaydedilmesi.
+- API secret'ın response içinde tam halde dönmemesi.
+- Beklenmedik kapanma -> doğrulanmış kurtarma yedeği.
+- Bozuk SQLite dosyası -> migration öncesi fail-closed.
+- Vision UI / Ayarlar UI kaynak sözleşmesi.
+
+4) STATİK / SEED KONTROLLERİ
+- Python py_compile: başarılı.
+- web/app.js node --check: başarılı.
+- Dağıtım seed PRAGMA integrity_check: ok.
+- Seed institutions: 0
+- Seed panels: 0
+- Seed media_assets: 0
+- Seed SHA-256 dosyası ile gerçek seed hash'i: eşleşiyor.
+
+5) OPENAI GERÇEK AĞ TESTİ
+- Bu paket oluşturulurken kullanıcıya ait gerçek OpenAI API anahtarı kullanılmadı.
+- OpenAI request payload, strict schema, image input ve function_call parsing mock/sözleşme testleriyle doğrulandı.
+- Gerçek OpenAI bağlantı testi kullanıcı kendi API anahtarını Ayarlar ekranından ekledikten sonra yapılmalıdır.
+
+6) SINIR
+- 5.0.0-alpha.1 güvenlik/Vision omurgasıdır; Kurum, Finans ve Prim henüz tamamen ortak dinamik core'a taşınmamıştır.
+
+7) PAKETLENMİŞ PYZ GERÇEK SMOKE TESTİ
+- OkulGuvenligi.pyz temiz geçici veri klasöründe gerçek HTTP sunucusu olarak başlatıldı.
+- /api/session -> version 5.0.0-alpha.1.
+- /api/health -> ok=true, integrity=ok.
+- Yerel asistan komutu -> güvenli ön izleme tokenı üretildi.
+- Asistan ayar API'si -> gpt-5.6-luna seçimi + sahte test anahtarı kaydı başarılı; secret response içinde echo edilmedi.
+- Test anahtarı temizlendi.
+- /api/shutdown -> proses exit code 0.
+- Temiz kapanış sonrası .logos_session_active.json işaretçisi kalmadı.
+- Kaynak ZIP bütünlük testi: başarılı.
+- Ana dağıtım ZIP bütünlük testi: başarılı.

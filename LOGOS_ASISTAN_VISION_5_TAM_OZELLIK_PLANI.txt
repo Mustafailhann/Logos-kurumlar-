@@ -1,0 +1,62 @@
+LOGOS ASİSTAN VISION 5.0 – TAM ÖZELLİK PLANI
+Hedef: günlük işletme ve ekran tasarımı işlerinin yaklaşık %95–98'ini kod yazmadan yönetmek.
+
+DEĞİŞMEZ PRENSİPLER
+- Kullanıcının nihai onayı olmadan kritik değişiklik yok.
+- AI'nin ham kaynak kod, SQL, shell veya dosya sistemi yazma yetkisi yok.
+- Kritik işlem = önce gölge test + etki analizi + yedek + yayın + bütünlük kontrolü.
+- Silme varsayılanı arşivdir. Kalıcı silme ayrı, açık ve çok aşamalı kullanıcı işlemi olmalıdır.
+- Teknik kimlikler sabit; görünen adlar ve düzen değişebilir.
+- Her değişiklik denetlenebilir işlem geçmişine yazılmalıdır.
+
+AŞAMA A – 5.0.0-alpha.1 – GÜVENLİ VISION OMURGASI [BU PAKETTE]
+- OpenAI metin+görsel planlayıcı.
+- Strict semantik komut şeması.
+- Gölge DB üzerinde çok adımlı plan provası.
+- Ön izleme / onay / otomatik yedek / otomatik rollback.
+- Merkezi sağlık kontrolü ve yazma kapısı.
+- Beklenmedik kapanma algılama ve kurtarma yedeği.
+- Bozuk DB'de migration öncesi fail-closed.
+- Ayarlar ekranından OpenAI bağlantısı; Windows DPAPI secret storage.
+- Yeni dinamik bölümlerde temel 7 eylemin otomatik oluşması.
+
+AŞAMA B – 5.0-alpha.2 – COMPONENT + LAYOUT ENGINE
+- Sayfa, sekme, kart, tablo, sütun, form bölgesi ve butonların teknik “slot” sistemi.
+- Sürükle-bırak + Yukarı/Aşağı erişilebilir taşıma.
+- AI'nin “görselde buraya” ifadesini slot kimliğine bağlaması.
+- Yeni bölüm sihirbazı: Kayıt Listesi / Servis / Stok / Teklif / Belge / Basit Tanım şablonları.
+- Şablona göre önerilen sütunlar; kullanıcı onayıyla eklenmesi.
+- Alan ve eylem bağımlılık analizi.
+
+AŞAMA C – 5.0-beta.1 – KURUM / FİNANS / PRİM ORTAK DİNAMİK ÇEKİRDEK
+- Korunan eski özel kodların parça parça repository/service/component yapısına ayrılması.
+- Kurum, Finans ve Prim'in aynı field/action/layout şemasını kullanması.
+- Mevcut veriyi kaybetmeden migration + geri dönüş testi.
+- AI'nin bu ana bölümlerde de güvenli alan/sütun/buton/görünüm işlemleri yapabilmesi.
+
+AŞAMA D – 5.0-beta.2 – AUTOMATION + PERMISSION ENGINE
+- “Şu olursa bunu yap” otomasyonları.
+- Rol/yetki: görüntüle, ekle, düzenle, arşivle, kalıcı silme, finans, asistan yayın onayı.
+- Otomasyon simülasyonu; gerçek uygulamadan önce örnek veriyle test.
+- Modüller arası güvenli ilişkiler ve stok/servis/finans akışları.
+
+AŞAMA E – 5.0-RC – GENİŞ ASİSTAN + KAYIT İŞLEMLERİ
+- “Bu kurumun telefonunu değiştir”, “seçili kayıtları arşivle”, “şu filtreyi oluştur” gibi
+  kayıt seviyesinde doğal dil komutları.
+- Toplu işlemlerde zorunlu etkilenen kayıt listesi ve sayı ön izlemesi.
+- Görsel tasarım eleştirisi + alternatif öneri + kullanıcı seçimi.
+- Hata tespitinde “uygula” yerine önce teşhis/öneri modu.
+- Geri al / önceki sürüme dön / değişiklik karşılaştırması.
+
+AŞAMA F – 5.0 STABLE
+- Uzun süreli Windows soak testi.
+- Büyük veri performans testleri.
+- Güç kesintisi / proses öldürme / disk dolu / bozuk DB / başarısız migration senaryoları.
+- Yedekten geri yükleme tatbikatı.
+- Sürüm yükseltme ve bir önceki sürüme geri dönüş paketi.
+
+%98 HEDEFİNİN ANLAMI
+Kodsuz hedef kapsamı: modül, alan, sütun, form, görünüm, filtre, eylem, sıralama, tema,
+dashboard, ilişki, otomasyon, yetki, toplu kayıt işlemleri ve Vision destekli tasarım.
+İşletim sistemi sürücüsü, yeni donanım protokolü veya çekirdek yazılım motorunun kendisini
+değiştirmek gibi düşük seviye yazılım işleri bu %98 kapsamının dışında kalır.

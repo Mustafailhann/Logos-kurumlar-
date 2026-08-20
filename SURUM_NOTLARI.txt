@@ -1,0 +1,19 @@
+LOGOS TECH 5.0.0-alpha.1 – VISION / CLEAN CORE SÜRÜM NOTLARI
+Tarih: 19.08.2026
+
+- 4.5.0-alpha.2 referans sürümü korunarak ayrı 5.0 geliştirme hattı oluşturuldu.
+- OpenAI destekli Vision planlayıcı eklendi: metin + isteğe bağlı ekran görüntüsü.
+- AI yalnız strict semantik LOGOS planı üretir; ham kod/SQL erişimi yoktur.
+- OpenAI planı gerçek DB'den önce geçici gölge SQLite kopyasında baştan sona uygulanarak doğrulanır.
+- Çok adımlı planlar desteklenir.
+- Yayın öncesi tam doğrulanmış yedek + yayın sonrası integrity_check + hata halinde restore eklendi.
+- Sağlık kontrolü bütün yazma isteklerinin önüne merkezi kapı olarak bağlandı.
+- Eşzamanlı yazma riskini azaltmak için mutation lock eklendi.
+- Var olan bozuk DB migration öncesinde fail-closed durur.
+- Beklenmedik kapanma işaretçisi + sonraki açılışta kurtarma yedeği eklendi.
+- Ayarlar ekranından OpenAI API anahtarı/modeli kod yazmadan yapılandırma eklendi.
+- Windows'ta OpenAI anahtarı DPAPI ile mevcut Windows kullanıcısına bağlı korunur; API anahtarı browser'a geri döndürülmez.
+- Modeller: GPT-5.6 Sol aliası gpt-5.6, GPT-5.6 Terra, GPT-5.6 Luna.
+- Yeni dinamik modül oluşturulduğunda 7 temel eylem otomatik eklenir.
+- Vision arayüzünde görsel yükleme, ekran bağlamı, risk ve işlem ön izlemesi yer alır.
+- Çevrimdışı yerel güvenli asistan fallback olarak korunur.

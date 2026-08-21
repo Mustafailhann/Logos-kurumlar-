@@ -24,10 +24,13 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
             parsed = json.loads(raw_input)
             if isinstance(parsed, list):
                 json_candidates = parsed
+            elif isinstance(parsed, dict) and "liste" in parsed:
+                json_candidates = parsed["liste"]
             elif isinstance(parsed, dict) and "institutions" in parsed:
                 json_candidates = parsed["institutions"]
             elif isinstance(parsed, dict) and "data" in parsed:
                 json_candidates = parsed["data"]
+
         except Exception:
             pass
 

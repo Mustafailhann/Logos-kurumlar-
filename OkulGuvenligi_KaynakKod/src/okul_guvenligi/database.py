@@ -2419,8 +2419,13 @@ class Database:
         self.backup("excel_aktarim_oncesi")
         now = utc_now()
         panel_count = 0
+        has_real_records = any(r.get("portal_id") and not str(r.get("portal_id")).startswith("ANON") for r in records)
         with self.transaction() as conn:
             conn.execute("UPDATE institutions SET sequence_number=NULL")
+            if has_real_records:
+                conn.execute("UPDATE institutions SET active=0 WHERE portal_id LIKE 'ANON%' OR institution_code LIKE 'AK%'")
+                conn.execute("UPDATE panels SET active=0 WHERE institution_id IN (SELECT id FROM institutions WHERE active=0)")
+
             for record in records:
                 panels = record.get("panels", [])
                 existing = conn.execute(

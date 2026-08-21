@@ -341,14 +341,11 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
             "rental_status": rental_status,
             "customer_status": customer_status,
             "payment_status": payment_status,
-            "health_status": health_status,
-            "rating": rating,
             "notes": notes,
             "active": 1,
             "source": "portal_web_sync",
             "panels": panels
         })
-
 
     return records
 
@@ -356,6 +353,9 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
 def fetch_portal_with_cookie(cookie_string: str, url: str = "https://okulguvenligi.com/uye/panel/kurumlar") -> list[dict[str, Any]]:
     if not cookie_string or not cookie_string.strip():
         raise ValueError("Oturum çerezi (Cookie) bulunamadı.")
+
+    t_now = time.strftime('%H:%M:%S')
+    print(f"[PORTAL SYNC {t_now}] 🌐 okulguvenligi.com canlı veri servisi çağrılıyor (islem=liste)...")
 
     # 1. Primary Method: POST islem=liste (fetches 596 institutions + errors as 4MB JSON directly from portal AJAX endpoint)
     post_data = urllib.parse.urlencode({"islem": "liste"}).encode("utf-8")
@@ -365,13 +365,15 @@ def fetch_portal_with_cookie(cookie_string: str, url: str = "https://okulguvenli
     req_post.add_header("X-Requested-With", "XMLHttpRequest")
 
     try:
-        with urllib.request.urlopen(req_post, timeout=25) as resp:
+        with urllib.request.urlopen(req_post, timeout=15) as resp:
             body = resp.read().decode("utf-8", errors="ignore")
             records = parse_portal_html_or_text(body)
+            t_done = time.strftime('%H:%M:%S')
+            print(f"[PORTAL SYNC {t_done}] ✅ okuguvenligi.com yanıt verdi: {len(records)} aktif filtreli kurum & arızalar alındı.")
             if records and len(records) > 0:
                 return records
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[PORTAL SYNC {t_now}] ⚠️ POST islem=liste uyarısı: {exc}")
 
     # 2. Secondary Fallback: Standard GET request
     req_get = urllib.request.Request(url, method="GET")
@@ -379,7 +381,7 @@ def fetch_portal_with_cookie(cookie_string: str, url: str = "https://okulguvenli
     req_get.add_header("Cookie", cookie_string.strip())
 
     try:
-        with urllib.request.urlopen(req_get, timeout=15) as resp:
+        with urllib.request.urlopen(req_get, timeout=12) as resp:
             html_content = resp.read().decode("utf-8", errors="ignore")
             records = parse_portal_html_or_text(html_content)
             if not records and ("giris" in resp.url.lower() or "login" in resp.url.lower()):
@@ -387,7 +389,6 @@ def fetch_portal_with_cookie(cookie_string: str, url: str = "https://okulguvenli
             return records
     except Exception as exc:
         raise ValueError(f"okulguvenligi.com bağlantı hatası: {exc}")
-
 
 
 def extract_cookies_from_response_and_jar(resp: Any, cj: Any) -> str:
@@ -416,6 +417,8 @@ class PortalLoginSessionStore:
         self._lock = threading.Lock()
 
     def start_login(self, username: str, password: str) -> dict[str, Any]:
+        t_now = time.strftime('%H:%M:%S')
+        print(f"\n[PORTAL LOGIN {t_now}] 🔑 1/3 Giriş isteği başlatılıyor... Kullanıcı: {username}")
         cj = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
         opener.addheaders = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")]
@@ -449,20 +452,25 @@ class PortalLoginSessionStore:
                     "created": time.time()
                 }
 
+            t_done = time.strftime('%H:%M:%S')
+            print(f"[PORTAL LOGIN {t_done}] 📲 1/3 SMS Kodu Gönderildi! Telefonunuzu kontrol ediniz.")
+
             return {
                 "session_id": session_id,
                 "sms_required": True,
                 "message": "📲 SMS doğrulama kodu telefonunuza gönderildi. Lütfen gelen kodu giriniz."
             }
         except Exception as exc:
+            print(f"[PORTAL LOGIN {t_now}] ❌ Giriş hatası: {exc}")
             raise ValueError(f"okulguvenligi.com giriş hatası: {exc}")
 
     def verify_sms(self, session_id: str, sms_code: str) -> dict[str, Any]:
+        t_now = time.strftime('%H:%M:%S')
+        print(f"\n[PORTAL LOGIN {t_now}] 📩 2/3 SMS Kodu Doğrulanıyor: {sms_code}")
         with self._lock:
             session = self._sessions.get(session_id)
             if not session:
                 raise ValueError("Oturum süresi doldu. Lütfen tekrar giriş yapın.")
-
 
         opener = session["opener"]
         cj = session["cj"]
@@ -479,7 +487,7 @@ class PortalLoginSessionStore:
 
         try:
             req = urllib.request.Request(url, data=post_data, method="POST")
-            resp = opener.open(req, timeout=15)
+            resp = opener.open(req, timeout=12)
             post_str = resp.read().decode("utf-8", errors="ignore")
 
             # Extract full cookie string from response & jar
@@ -494,18 +502,23 @@ class PortalLoginSessionStore:
             except json.JSONDecodeError:
                 pass
 
-            # Fetch authenticated kurumlar data using explicit Cookie header
+            t_auth = time.strftime('%H:%M:%S')
+            print(f"[PORTAL LOGIN {t_auth}] ✅ 2/3 SMS Doğrulandı! Canlı okullar ve arızalar çekiliyor...")
+
             records = []
             try:
                 records = fetch_portal_with_cookie(cookie_str, "https://okulguvenligi.com/uye/panel/kurumlar")
-            except Exception:
-                pass
+            except Exception as exc:
+                print(f"[PORTAL LOGIN {t_auth}] ⚠️ Veri çekim uyarısı: {exc}")
 
             if not records:
                 try:
                     records = fetch_portal_with_cookie(cookie_str, "https://okulguvenligi.com/uye/panel/")
                 except Exception:
                     pass
+
+            t_ok = time.strftime('%H:%M:%S')
+            print(f"[PORTAL LOGIN {t_ok}] 🎉 3/3 Başarılı! Toplam {len(records)} canlı kurum veritabanına aktarıldı.")
 
             return {
                 "cookie_string": cookie_str,
@@ -514,10 +527,6 @@ class PortalLoginSessionStore:
                 "records": records,
                 "message": "✅ SMS doğrulaması başarılı! Portaldan canlı veriler güncellendi ve 30 dk otomatik çekim görevi aktif edildi."
             }
-
-
-
-
 
         except Exception as exc:
             raise ValueError(f"SMS doğrulama hatası: {exc}")

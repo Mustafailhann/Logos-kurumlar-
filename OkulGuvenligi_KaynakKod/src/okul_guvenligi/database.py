@@ -1351,18 +1351,19 @@ class Database:
                 LEFT JOIN panels p ON p.institution_id=i.id AND p.active=1
                 WHERE i.active=1 AND (
                     i.health_status LIKE '%Hata%' OR
+                    (i.notes IS NOT NULL AND i.notes != '' AND i.notes != 'Hata Yok') OR
                     i.customer_status LIKE '%İPTAL%' OR
                     i.customer_status LIKE '%PASİF%' OR
+                    i.customer_status LIKE '%DURDURULDU%' OR
                     i.payment_status LIKE '%ÖDEMEDİ%' OR
-                    i.notes LIKE '%KAPALI%' OR
-                    i.notes LIKE '%YOKLAMA%' OR
-                    i.notes LIKE '%İPTAL%' OR
+                    i.payment_status LIKE '%BORÇ%' OR
                     i.rating <= 2
                 )
 
                 GROUP BY i.id
                 ORDER BY i.updated_at DESC, i.name
             """).fetchall()
+
 
             result = []
             for r in rows:

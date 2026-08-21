@@ -60,10 +60,12 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
             if any(kw in name_upper for kw in ["ANAOKUL", "ANASINIF", "KREŞ", "KRES", "YUVA", "MONTESSORI", "KINDERGARTEN", "OKUL ÖNCESİ", "OKUL ONCESI"]):
                 continue
 
-            # Rule 2: Dealer must be LOGOS
-            dealer = str(item.get("by") or item.get("dealer") or "LOGOS").strip()
-            if dealer and "LOGOS" not in dealer.upper():
+            # Rule 2: Dealer must be LOGOS (by_val can be '260', '6737', or 'LOGOS')
+            by_val = str(item.get("by") or item.get("bayi_id") or item.get("dealer") or "").strip()
+            is_logos = (not by_val or by_val in ["260", "6737", "LOGOS"] or "LOGOS" in by_val.upper())
+            if not is_logos:
                 continue
+            dealer = "LOGOS"
 
             # Rule 3: Product must be Kapı Kontrol
             urun_info = item.get("urun_bilgileri") or {}
@@ -89,7 +91,7 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
                 continue
 
 
-            # formatHatalar logic matching user's exact function
+            # formatHatalar logic matching portal's error messages
             hatalar_raw = item.get("hatalar") or item.get("notes") or []
             notes_parts = []
             if isinstance(hatalar_raw, list):
@@ -111,6 +113,59 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
             health_status = "Kurumda Hatalar Var" if notes else "Kurumda sorun yok"
             customer_status = "AKTİF" if (item.get("aktif") in [1, "1", True]) else "PASİF"
 
+            # Parse panels / terminaller
+            panels = []
+            terminaller = item.get("terminaller") or []
+            if isinstance(terminaller, list):
+                for term in terminaller:
+                    if not isinstance(term, dict):
+                        continue
+                    t_name = str(term.get("terminal_takma_adi") or term.get("terminal_ismi") or "Turnike Paneli").strip()
+                    local_ip = str(term.get("lokal_ip") or "").strip()
+                    alpemix = str(term.get("alpemix_adi") or "").strip()
+                    last_seen = str(term.get("son_aktiflik_zamani") or "").strip()
+
+                    versiyon = term.get("versiyon_bilgisi") or {}
+                    v_str = f"{versiyon.get('program', '')} / {versiyon.get('versiyon_guncelleme', '')}".strip(" /")
+
+                    modem = term.get("modem_bilgileri") or {}
+                    modem_name = str(modem.get("modem") or "").strip()
+                    operator = str(modem.get("gsm_operator") or "").strip()
+                    phone = str(modem.get("gsm") or "").strip()
+
+                    cameras = term.get("hareket_kamerasi") or []
+                    e_cam_status, x_cam_status = "", ""
+                    e_cam_ip, x_cam_ip = "", ""
+                    if isinstance(cameras, list):
+                        for cam in cameras:
+                            if not isinstance(cam, dict):
+                                continue
+                            cam_name = str(cam.get("kamera_adi") or "").upper()
+                            direction = cam.get("hareket_yonu")
+                            durum = cam.get("durum") is True
+
+                            if direction == 1 or "GİRİŞ" in cam_name:
+                                e_cam_status = "GİRİŞ KAMERASI AKTİF" if durum else "GİRİŞ KAMERASI PASİF"
+                                e_cam_ip = str(cam.get("ip") or "").strip()
+                            elif direction == 0 or "ÇIKIŞ" in cam_name:
+                                x_cam_status = "ÇIKIŞ KAMERASI AKTİF" if durum else "ÇIKIŞ KAMERASI PASİF"
+                                x_cam_ip = str(cam.get("ip") or "").strip()
+
+                    panels.append({
+                        "panel_key": alpemix or f"panel_{len(panels)+1}",
+                        "name": t_name,
+                        "local_ip": local_ip,
+                        "software_version": v_str,
+                        "modem": modem_name,
+                        "operator": operator,
+                        "phone": phone,
+                        "last_connection": last_seen,
+                        "entry_camera_status": e_cam_status,
+                        "entry_camera_ip": e_cam_ip,
+                        "exit_camera_status": x_cam_status,
+                        "exit_camera_ip": x_cam_ip,
+                    })
+
             records.append({
                 "portal_id": str(item.get("id") or item.get("portal_id") or "").strip(),
                 "institution_code": str(item.get("kurum_kodu") or item.get("institution_code") or "").strip(),
@@ -127,10 +182,11 @@ def parse_portal_html_or_text(raw_input: str) -> list[dict[str, Any]]:
                 "customer_person": str(item.get("musteri_temsilcisi") or item.get("customer_person") or ""),
                 "technical_person": str(item.get("teknik_servis_temsilcisi") or item.get("technical_person") or ""),
                 "accounting_person": str(item.get("muhasebe_temsilcisi") or item.get("accounting_person") or ""),
-                "panels": [],
+                "panels": panels,
             })
         if records:
             return records
+
 
     # Clean HTML tags if present, preserving breaks
     clean = re.sub(r'<style[^>]*>.*?</style>', '', raw_input, flags=re.DOTALL | re.IGNORECASE)
